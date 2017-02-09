@@ -13,7 +13,7 @@ This is a trivial example; for thorough information, please consult the [godoc](
 First install jwtauth and its dependency:
 
 ```go
-go get -u github.com/rightscale/goa-jwtauth github.com/dgrijalva/jwt
+go get -u github.com/rightscale/goa-jwtauth github.com/dgrijalva/jwt-go
 ```
 
 In your service's design DSL, declare a JWT security scheme and protect some
