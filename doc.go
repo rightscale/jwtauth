@@ -4,13 +4,14 @@ validates JSON Web Tokens (JWTs) that appear in requests, then adds them
 to the request context. It supports any JWT algorithm that uses RSA, ECDSA
 or HMAC.
 
-When you setup your goa.Service, install the jwtauth middleware:
+When you setup your goa.Service, install the jwtauth middlewares:
 
-    // Assuming your API DSL created a JWT security scheme named "JWT"
-		scheme := app.NewJWTSecurity()
-    secret := []byte("This is my HMAC key")
-    store = jwtauth.SimpleKeystore{secret}
-		middleware := jwtauth.New(scheme, store)
+    secret := []byte("super secret HMAC key")
+    store := jwtauth.SimpleKeystore{Key: secret}
+
+    service.Use(jwtauth.Authenticate(app.NewJWTSecurity(), store))
+
+    app.UseJWTMiddleware(service, jwtauth.Authorize())
 
 In this example, jwtauth uses a single, static HMAC key and relies
 on the default authentication and authorization behavior. Your users can now
@@ -23,6 +24,27 @@ When someone makes a request containing a JWT, jwauth verifies that the token
 contains all of the scopes that are required by your action, as determined by
 goa.ContextRequiredScopes(). If anything is missing, jwtauth returns 4xx or 5xx
 error with a detailed message.
+
+
+Authentication vs. Authorization
+
+In Goa's parlance, a "security scheme" mostly concerns itself with authorization:
+deciding whether the request may proceed to your controller. However, before
+we can authorize, we must know who is making the request, i.e. we must
+authenticate the request.
+
+Package jwtauth encourages separation of concerns by performing authentication
+and authorization in two separate middlewares. The division of responsibility is
+as follows.
+
+Authentication: determines whether a JWT is present; parses the JWT; validates
+its signature; creates a jwtauth.Claims object representing the information
+in the JWT; calls jwtauth.WithClaims() to create a new Context containing the
+Claims.
+
+Authorization: calls jwtauth.ContextClaims(), then decides whether the request
+is allowed based on the claims, the required scopes, and potentially on other
+request information.
 
 
 Multiple Issuers
@@ -49,35 +71,35 @@ request.
 
 Custom Authorization
 
-To change how jwtauth performs auth, write your own function that matches the
-signature of type AuthorizationFunc, then pass your function to the
-constructor using jwtauth's options DSL:
+To change how jwtauth performs authorization, write your own function that
+matches the signature of type AuthorizationFunc, then tell jwtauth ot use
+your function instead of its own:
 
     func myAuthzFunc(ctx context.Context) error {
 			return fmt.Errorf("nobody may do anything!")
 	  }
 
-    store := jwt.SimpleKeystore{[]byte("This is my HMAC key")}
-		middleware := jwtauth.New(scheme, store,
-			jwtauth.Authorization(myAuthzFunc)
-		)
+		middleware := jwtauth.AuthorizeWithFunc(myAuthzFunc)
 
 When overriding authorization behavior, you can always delegate some work to
-the default behavior. To additionally check with a central authorization server
-to ensure that the user is alive and well:
+the default behavior. For example, to let users do anything on their birthday:
 
 		func myAuthzFunc(ctx context.Context) error {
-			tokenAuth := jwtauth.Authorize(ctx)
-			if err != nil {
-				return tokenAuth
-			}
+      claims := jwtauth.ContextClaims(ctx)
+      if birthday := claims.Time("birthday"); !birthday.IsZero() {
+        _, bm, bd := birthday.Date()
+        _, m, d := time.Now().Date()
+        if bm == m && bd == d {
+          // Happy birthday!
+          return nil
+        }
+      }
 
-			claims := jwtauth.ContextClaims(ctx)
-			http.Get(fmt.Sprintf("http://auth-server?%s", claims.Subject()))
+			return jwtauth.DefaultAuthorization(ctx)
 		}
 
 
-Custom Extraction
+Custom Token Extraction
 
 You can specialize the logic used to extract a JWT from the request
 by providing the Extraction() option:
