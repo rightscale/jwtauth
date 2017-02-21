@@ -15,7 +15,7 @@ import (
 	"github.com/rightscale/goa-jwtauth"
 )
 
-var _ = Describe("jwtauth Middleware", func() {
+var _ = Describe("Authenticate() middleware", func() {
 	Context("error handling", func() {
 		var stack goa.Handler
 		var resp *httptest.ResponseRecorder
@@ -28,13 +28,13 @@ var _ = Describe("jwtauth Middleware", func() {
 				return nil
 			}
 
-			middleware := jwtauth.New(commonScheme, &jwtauth.SimpleKeystore{hmacKey1})
+			middleware := jwtauth.Authenticate(commonScheme, &jwtauth.SimpleKeystore{hmacKey1})
 			stack = middleware(stack)
 		})
 
 		It("rejects unknown issuers", func() {
 			store := &jwtauth.NamedKeystore{}
-			middleware := jwtauth.New(commonScheme, store)
+			middleware := jwtauth.Authenticate(commonScheme, store)
 
 			setBearerHeader(req, makeToken("suspicious-issuer", "", hmacKey1))
 
@@ -46,7 +46,7 @@ var _ = Describe("jwtauth Middleware", func() {
 		It("fails when JWTSecurity.Location is unsupported", func() {
 			scheme := &goa.JWTSecurity{In: goa.LocQuery, Name: "jwt"}
 			store := &jwtauth.NamedKeystore{}
-			middleware := jwtauth.New(scheme, store)
+			middleware := jwtauth.Authenticate(scheme, store)
 
 			result := middleware(stack)(context.Background(), resp, req)
 
@@ -54,7 +54,7 @@ var _ = Describe("jwtauth Middleware", func() {
 		})
 
 		It("converts issuers to string", func() {
-			middleware := jwtauth.New(commonScheme, &jwtauth.SimpleKeystore{hmacKey1})
+			middleware := jwtauth.Authenticate(commonScheme, &jwtauth.SimpleKeystore{hmacKey1})
 			claims := jwtpkg.MapClaims{}
 			claims["iss"] = 7
 			token := jwtpkg.NewWithClaims(jwtpkg.SigningMethodHS256, &claims)
@@ -86,7 +86,7 @@ var _ = Describe("jwtauth Middleware", func() {
 				return nil
 			}
 
-			middleware = jwtauth.New(commonScheme, &jwtauth.SimpleKeystore{hmacKey1})
+			middleware = jwtauth.Authenticate(commonScheme, &jwtauth.SimpleKeystore{hmacKey1})
 		})
 
 		It("accepts requests that lack tokens", func() {
@@ -122,7 +122,7 @@ func testKeyType(name string, trusted, untrusted interface{}) {
 			}
 
 			store := &jwtauth.SimpleKeystore{publicKey(trusted)}
-			middleware = jwtauth.New(commonScheme, store)
+			middleware = jwtauth.Authenticate(commonScheme, store)
 		})
 
 		AfterEach(func() {

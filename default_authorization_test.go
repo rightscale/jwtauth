@@ -24,8 +24,9 @@ var _ = Describe("DefaultAuthorization()", func() {
 			return nil
 		}
 
-		middleware := jwtauth.New(commonScheme, &jwtauth.SimpleKeystore{hmacKey1})
-		stack = middleware(stack)
+		authentication := jwtauth.Authenticate(commonScheme, &jwtauth.SimpleKeystore{Key: hmacKey1})
+		authorization := jwtauth.Authorize()
+		stack = authentication(authorization(stack))
 	})
 
 	Context("given no required scopes", func() {

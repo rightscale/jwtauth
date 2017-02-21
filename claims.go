@@ -72,6 +72,10 @@ func (c Claims) Bool(name string) bool {
 		return ts > 0
 	case uint:
 		return ts > 0
+	case int32:
+		return ts > 0
+	case uint32:
+		return ts > 0
 	case int64:
 		return ts > 0
 	case uint64:

@@ -32,7 +32,7 @@ func DefaultAuthorization(ctx context.Context, claims Claims) error {
 			}
 		}
 		if !found {
-			return ErrAuthorizationFailed("missing scopes", "required", reqd)
+			return ErrAuthorizationFailed("missing scopes", "held", held, "required", reqd)
 		}
 	}
 	return nil

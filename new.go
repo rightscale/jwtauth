@@ -2,57 +2,9 @@ package jwtauth
 
 import (
 	"fmt"
-	"net/http"
 
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/goadesign/goa"
-	"golang.org/x/net/context"
 )
-
-// New creates a jwtauth middleware with the specified security scheme,
-// keystore, and options.
-func New(scheme *goa.JWTSecurity, store Keystore, options ...Option) goa.Middleware {
-	oo := &mwopts{}
-	oo.Scheme = scheme
-	oo.Keystore = store
-	oo.Extraction = DefaultExtraction
-	oo.Authorization = DefaultAuthorization
-
-	for _, o := range options {
-		o(oo)
-	}
-
-	return func(nextHandler goa.Handler) goa.Handler {
-		return func(ctx context.Context, rw http.ResponseWriter, req *http.Request) error {
-			token, err := parseToken(oo.Scheme, oo.Keystore, oo.Extraction, req)
-			if err != nil {
-				return err
-			}
-
-			claims := Claims{}
-			if token != nil {
-				switch tc := token.Claims.(type) {
-				case jwt.MapClaims:
-					claims = Claims(tc)
-				default:
-					// this is impossible; jwt only produces MapClaims when parsing
-					panic(fmt.Sprintf("unsupported jwt.Claims type %T", tc))
-				}
-			}
-
-			ctx = WithClaims(ctx, claims)
-
-			if oo.Authorization != nil {
-				err = oo.Authorization(ctx, claims)
-			}
-
-			if err == nil {
-				return nextHandler(ctx, rw, req)
-			}
-			return err
-		}
-	}
-}
 
 // NewToken creates a JWT with the specified claims and signs it using
 // the specified issuer key.

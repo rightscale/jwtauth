@@ -17,7 +17,67 @@ func (bs bogusStringer) String() string {
 }
 
 var _ = Describe("Claims", func() {
-	It("handles type conversions", func() {
+	falseNumbers := []interface{}{
+		int(0),
+		int(-1),
+		uint(0),
+		int32(0),
+		uint32(0),
+		int64(0),
+		uint64(0),
+		float32(0),
+		float64(0),
+	}
+	trueNumbers := []interface{}{
+		int(1),
+		int(42),
+		uint(1),
+		int32(1),
+		uint32(1),
+		int64(1),
+		uint64(1),
+		float32(1),
+		float64(1),
+	}
+
+	epochNumbers := []interface{}{
+		int(0),
+		int(0),
+		uint(0),
+		int32(0),
+		uint32(0),
+		int64(0),
+		uint64(0),
+		float32(0),
+		float64(0),
+	}
+
+	It("converts to bool", func() {
+		claims := jwtauth.Claims{}
+
+		claims["foo"] = true
+		Expect(claims.Bool("foo")).To(Equal(true))
+		claims["foo"] = "True"
+		Expect(claims.Bool("foo")).To(Equal(true))
+		claims["foo"] = "f"
+		Expect(claims.Bool("foo")).To(Equal(false))
+		claims["foo"] = "Fal"
+		Expect(claims.Bool("foo")).To(Equal(false))
+		for _, n := range falseNumbers {
+			claims["foo"] = n
+			Expect(claims.Bool("foo")).To(Equal(false))
+			Expect(claims.Int("foo")).To(BeNumerically("<=", 0))
+		}
+		for _, n := range trueNumbers {
+			claims["foo"] = n
+			Expect(claims.Bool("foo")).To(Equal(true))
+			Expect(claims.Int("foo")).To(BeNumerically(">", int64(0)))
+		}
+		claims["foo"] = time.Now()
+		Expect(claims.Bool("foo")).To(Equal(false))
+	})
+
+	It("converts to string", func() {
 		claims := jwtauth.Claims{}
 
 		claims["foo"] = bogusStringer{}
@@ -29,41 +89,10 @@ var _ = Describe("Claims", func() {
 		Expect(claims.Strings("foo")).To(Equal([]string{"bar"}))
 		claims["foo"] = []string{"bar", "baz"}
 		Expect(claims.Strings("foo")).To(Equal([]string{"bar", "baz"}))
+	})
 
-		claims["foo"] = true
-		Expect(claims.Bool("foo")).To(Equal(true))
-		claims["foo"] = "True"
-		Expect(claims.Bool("foo")).To(Equal(true))
-		claims["foo"] = "f"
-		Expect(claims.Bool("foo")).To(Equal(false))
-		claims["foo"] = "Fal"
-		Expect(claims.Bool("foo")).To(Equal(false))
-		falseNumbers := []interface{}{
-			0, -1,
-			uint(0),
-			int64(0),
-			uint64(0),
-			float32(0),
-			float64(0),
-		}
-		trueNumbers := []interface{}{
-			1, 42,
-			uint(1),
-			int64(1),
-			uint64(1),
-			float32(1),
-			float64(1),
-		}
-		for _, n := range falseNumbers {
-			claims["foo"] = n
-			Expect(claims.Bool("foo")).To(Equal(false))
-			Expect(claims.Int("foo")).To(BeNumerically("<=", 0))
-		}
-		for _, n := range trueNumbers {
-			claims["foo"] = n
-			Expect(claims.Bool("foo")).To(Equal(true))
-			Expect(claims.Int("foo")).To(BeNumerically(">", int64(0)))
-		}
+	It("converts to numeric", func() {
+		claims := jwtauth.Claims{}
 
 		claims["foo"] = "0"
 		Expect(claims.Int("foo")).To(Equal(int64(0)))
@@ -73,10 +102,20 @@ var _ = Describe("Claims", func() {
 		Expect(claims.Int("foo")).To(Equal(int64(42)))
 		claims["foo"] = float64(42.0)
 		Expect(claims.Int("foo")).To(Equal(int64(42)))
+	})
+
+	It("converts to Time", func() {
+		claims := jwtauth.Claims{}
 
 		now := time.Now().Unix()
 		claims["foo"] = now
 		Expect(claims.Time("foo").Unix()).To(Equal(now))
+
+		epoch := time.Unix(0, 0).UTC()
+		for _, n := range epochNumbers {
+			claims["foo"] = n
+			Expect(claims.Time("foo").UTC()).To(Equal(epoch))
+		}
 	})
 
 	It("handles standard claims", func() {

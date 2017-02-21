@@ -7,11 +7,11 @@ import (
 	"github.com/rightscale/goa-jwtauth"
 )
 
-var _ = Describe("TestMiddleware()", func() {
+var _ = Describe("TestAuthenticate()", func() {
 	scheme := &goa.JWTSecurity{In: goa.LocHeader, Name: "Authorization"}
 
 	It("returns a middleware", func() {
-		mw := jwtauth.TestMiddleware(scheme)
+		mw := jwtauth.TestAuthenticate(scheme)
 		Ω(mw).ShouldNot(BeNil())
 	})
 })

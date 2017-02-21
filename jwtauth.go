@@ -21,10 +21,14 @@ type (
 		Get(issuer string) interface{}
 	}
 
-	// ExtractionFunc is an optional callback that allows customization of the
-	// way the middleware finds the JWT associated with each request. If your
-	// use case involves a proprietary JWT encoding, or a nonstandard location
-	// for the JWT, you can handle it with a custom ExtractionFunc.
+	// ExtractionFunc is an optional callback that allows you to customize
+	// jwtauth's handling of JSON Web Tokens during authentication.
+	//
+	// If your use case involves a proprietary JWT encoding, or a nonstandard
+	// location for the JWT, you can handle it with a custom ExtractionFunc.
+	//
+	// The return value from ExtractionFunc should either be the empty string
+	// (if no token was present in the request), or a well-formed JWT.
 	ExtractionFunc func(*goa.JWTSecurity, *http.Request) (string, error)
 
 	// AuthorizationFunc is an optional callback that allows customization
