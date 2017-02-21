@@ -3,7 +3,7 @@ package jwtauth
 import "github.com/goadesign/goa"
 
 // TestKey is a static HMAC key used to sign and verify test JWTs.
-const TestKey = "https://github.com/rightscale/goa-jwtauth#test"
+const TestKey = "https://github.com/rightscale/jwtauth#test"
 
 // TestAuthenticate returns an authentication middleware that accepts any
 // JWT signed with TestKey.

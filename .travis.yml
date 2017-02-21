@@ -14,7 +14,7 @@ install:
 - go get github.com/goadesign/goa
 script:
 - ginkgo -r -cover
-- goveralls -coverprofile=goa-jwtauth.coverprofile -service=travis-ci -repotoken $COVERALLS_TOKEN
+- goveralls -coverprofile=jwtauth.coverprofile -service=travis-ci -repotoken $COVERALLS_TOKEN
 notifications:
   webhooks:
     urls:

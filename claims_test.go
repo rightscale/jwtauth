@@ -6,7 +6,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/rightscale/goa-jwtauth"
+	"github.com/rightscale/jwtauth"
 )
 
 type bogusStringer struct {

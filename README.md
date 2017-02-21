@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/rightscale/goa-jwtauth.png)](https://travis-ci.org/rightscale/goa-jwtauth) [![Coverage](https://coveralls.io/repos/github/rightscale/goa-jwtauth/badge.svg?branch=master)](https://coveralls.io/github/rightscale/goa-jwtauth?branch=master) [![Go Report](https://goreportcard.com/badge/github.com/rightscale/goa-jwtauth)](https://goreportcard.com/report/github.com/rightscale/goa-jwtauth) [![Docs](https://img.shields.io/badge/docs-godoc-blue.svg)](https://godoc.org/github.com/rightscale/goa-jwtauth)
+[![Build Status](https://travis-ci.org/rightscale/jwtauth.png)](https://travis-ci.org/rightscale/jwtauth) [![Coverage](https://coveralls.io/repos/github/rightscale/jwtauth/badge.svg?branch=master)](https://coveralls.io/github/rightscale/jwtauth?branch=master) [![Go Report](https://goreportcard.com/badge/github.com/rightscale/jwtauth)](https://goreportcard.com/report/github.com/rightscale/jwtauth) [![Docs](https://img.shields.io/badge/docs-godoc-blue.svg)](https://godoc.org/github.com/rightscale/jwtauth)
 
 Package jwtauth provides a middleware for the [Goa](https://github.com/goadesign/goa)
 framework that parses and validates JSON Web Tokens (JWTs) that appear in
@@ -8,12 +8,12 @@ that uses RSA, ECDSA or HMAC.
 Usage
 =====
 
-This is a trivial example; for thorough information, please consult the [godoc](https://godoc.org/github.com/rightscale/goa-jwtauth).
+This is a trivial example; for thorough information, please consult the [godoc](https://godoc.org/github.com/rightscale/jwtauth).
 
 First install jwtauth and its dependency:
 
 ```go
-go get -u github.com/rightscale/goa-jwtauth github.com/dgrijalva/jwt-go
+go get -u github.com/rightscale/jwtauth github.com/dgrijalva/jwt-go
 ```
 
 In your service's design DSL, declare a JWT security scheme and protect some

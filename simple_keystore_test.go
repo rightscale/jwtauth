@@ -3,7 +3,7 @@ package jwtauth_test
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/rightscale/goa-jwtauth"
+	"github.com/rightscale/jwtauth"
 )
 
 var _ = Describe("SimpleKeystore", func() {

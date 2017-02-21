@@ -13,7 +13,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/types"
-	jwtauth "github.com/rightscale/goa-jwtauth"
+	jwtauth "github.com/rightscale/jwtauth"
 
 	"testing"
 
@@ -22,7 +22,7 @@ import (
 
 func TestJWTSuite(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "goa-jwtauth")
+	RunSpecs(t, "jwtauth")
 }
 
 type bogusClaims struct{}

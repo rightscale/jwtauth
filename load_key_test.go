@@ -6,7 +6,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	jwtauth "github.com/rightscale/goa-jwtauth"
+	jwtauth "github.com/rightscale/jwtauth"
 )
 
 var _ = Describe("LoadKey", func() {

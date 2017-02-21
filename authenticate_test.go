@@ -12,7 +12,7 @@ import (
 	"github.com/goadesign/goa"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/rightscale/goa-jwtauth"
+	"github.com/rightscale/jwtauth"
 )
 
 var _ = Describe("Authenticate() middleware", func() {
