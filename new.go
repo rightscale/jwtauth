@@ -27,8 +27,7 @@ import (
 // []byte (for HMAC tokens) or a crypto.PrivateKey (for public-key tokens).
 //
 // There is no standard claim name for authorization scopes, so jwtauth uses
-// the least-surprising name, "scopes." See Authorization() to learn more
-// about claims and scopes.
+// the least-surprising name, "scopes."
 func NewToken(key interface{}, claims Claims) (string, error) {
 	method := key2method(key)
 	if method == nil {

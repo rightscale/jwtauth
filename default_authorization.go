@@ -16,11 +16,15 @@ var ScopesClaim = "scopes"
 // JWT. If the claimed scopes satisfy all required scopes, DefaultAuthorization
 // passes the request; otherwise, it responds with ErrAuthorizationFailed.
 //
-// If the context requires no scopes, DefaultAuthorization always passes
-// the request.
+// If the context requires no scopes, DefaultAuthorization still verifies
+// that SOME claims are present, under the assumption that the user needs to
+// be authenticated even if they do not require any specific privilege.
 func DefaultAuthorization(ctx context.Context, claims Claims) error {
-	reqd := goa.ContextRequiredScopes(ctx)
+	if len(claims) == 0 {
+		return ErrAuthorizationFailed("authentication required")
+	}
 
+	reqd := goa.ContextRequiredScopes(ctx)
 	held := claims.Strings(ScopesClaim)
 
 	for _, r := range reqd {

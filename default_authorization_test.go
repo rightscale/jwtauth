@@ -30,10 +30,10 @@ var _ = Describe("DefaultAuthorization()", func() {
 	})
 
 	Context("given no required scopes", func() {
-		It("passes", func() {
+		It("requires authentication", func() {
 			result := stack(context.Background(), resp, req)
 
-			Ω(result).ShouldNot(HaveOccurred())
+			Ω(result).Should(HaveOccurred())
 		})
 	})
 
