@@ -55,6 +55,8 @@ var _ = Describe("Claims", func() {
 	It("converts to bool", func() {
 		claims := jwtauth.Claims{}
 
+		claims["foo"] = false
+		Expect(claims.Bool("foo")).To(Equal(false))
 		claims["foo"] = true
 		Expect(claims.Bool("foo")).To(Equal(true))
 		claims["foo"] = "True"
