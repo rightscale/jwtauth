@@ -23,16 +23,16 @@ var _ = Describe("Context accessor functions", func() {
 		})
 	})
 	Describe("ContextClaims", func() {
-		Context("with an authInfo context", func() {
+		Context("given a context with claims", func() {
 			BeforeEach(func() {
-				ctx = withAuthInfo(ctx, token, claims)
+				ctx = WithClaims(ctx, claims)
 			})
 			It("returns the claims", func() {
 				Ω(ContextClaims(ctx)).Should(Equal(claims))
 			})
 		})
 
-		Context("with a non-authInfo context", func() {
+		Context("given a context without claims", func() {
 			BeforeEach(func() {
 				ctx = context.Background()
 			})
@@ -42,16 +42,16 @@ var _ = Describe("Context accessor functions", func() {
 		})
 	})
 	Describe("ContextToken", func() {
-		Context("with an authInfo context", func() {
+		Context("given a context with a token", func() {
 			BeforeEach(func() {
-				ctx = withAuthInfo(ctx, token, claims)
+				ctx = WithToken(ctx, token)
 			})
 			It("returns the token", func() {
 				Ω(ContextToken(ctx)).Should(Equal(token))
 			})
 		})
 
-		Context("with a non-authInfo context", func() {
+		Context("given a context that has no token", func() {
 			BeforeEach(func() {
 				ctx = context.Background()
 			})

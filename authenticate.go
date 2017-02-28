@@ -47,7 +47,8 @@ func AuthenticateWithFunc(scheme *goa.JWTSecurity, store Keystore, extraction Ex
 				}
 			}
 
-			return nextHandler(withAuthInfo(ctx, rawToken, claims), rw, req)
+			ctx = WithToken(WithClaims(ctx, claims), rawToken)
+			return nextHandler(ctx, rw, req)
 		}
 	}
 }
