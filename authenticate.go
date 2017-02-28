@@ -32,16 +32,22 @@ func AuthenticateWithFunc(scheme *goa.JWTSecurity, store Keystore, extraction Ex
 				return err
 			}
 
-			var claims Claims
+			var (
+				claims   Claims
+				rawToken string
+			)
+			if token != nil {
+				rawToken = token.Raw
 
-			if token != nil && token.Claims != nil {
-				// NB: jwt-go always produces MapClaims on parse; type assertion should
-				// never fail, and if it were to, we'd want to panic since we count this
-				// as an invariant!
-				claims = Claims(token.Claims.(jwt.MapClaims))
+				if token.Claims != nil {
+					// NB: jwt-go always produces MapClaims on parse; type assertion should
+					// never fail, and if it were to, we'd want to panic since we count this
+					// as an invariant!
+					claims = Claims(token.Claims.(jwt.MapClaims))
+				}
 			}
 
-			return nextHandler(WithClaims(ctx, claims), rw, req)
+			return nextHandler(withAuthInfo(ctx, rawToken, claims), rw, req)
 		}
 	}
 }
