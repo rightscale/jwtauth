@@ -55,16 +55,36 @@ var _ = Describe("Authenticate() middleware", func() {
 
 		It("converts issuers to string", func() {
 			middleware := jwtauth.Authenticate(commonScheme, &jwtauth.SimpleKeystore{hmacKey1})
-			claims := jwtpkg.MapClaims{}
-			claims["iss"] = 7
-			token := jwtpkg.NewWithClaims(jwtpkg.SigningMethodHS256, &claims)
+			token := jwtpkg.NewWithClaims(jwtpkg.SigningMethodHS256, &jwtpkg.MapClaims{"iss": 7})
 			s, err := token.SignedString(hmacKey1)
-			if err != nil {
-				panic(err)
-			}
+			Ω(err).NotTo(HaveOccurred())
+
 			setBearerHeader(req, s)
 
 			result := middleware(stack)(context.Background(), resp, req)
+
+			Ω(result).ShouldNot(HaveOccurred())
+		})
+
+		It("passes a new context containing claims & the raw token to the next handler", func() {
+			var (
+				claims     = jwtpkg.MapClaims{"potatoes": "fried"}
+				token      = jwtpkg.NewWithClaims(jwtpkg.SigningMethodHS256, claims)
+				middleware = jwtauth.Authenticate(commonScheme, &jwtauth.SimpleKeystore{hmacKey1})
+			)
+
+			s, err := token.SignedString(hmacKey1)
+			Ω(err).NotTo(HaveOccurred())
+
+			nextHandler := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+				Expect(jwtauth.ContextClaims(ctx)).To(Equal(jwtauth.Claims(claims)))
+				Expect(jwtauth.ContextToken(ctx)).To(Equal(s))
+
+				return nil
+			}
+
+			setBearerHeader(req, s)
+			result := middleware(nextHandler)(context.Background(), resp, req)
 
 			Ω(result).ShouldNot(HaveOccurred())
 		})

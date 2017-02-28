@@ -34,7 +34,7 @@ func (c Claims) String(name string) string {
 }
 
 // Strings returns the named claim as a list of strings, following the same
-// conversion rules as String(). If the claim is abent, Strings returns nil.
+// conversion rules as String(). If the claim is absent, Strings returns nil.
 func (c Claims) Strings(name string) []string {
 	s, ok := c[name]
 	if !ok {
