@@ -1,7 +1,7 @@
 package jwtauth
 
 import (
-	"golang.org/x/net/context"
+	"context"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

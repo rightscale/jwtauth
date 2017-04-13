@@ -1,10 +1,10 @@
 package jwtauth
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/goadesign/goa"
-	"golang.org/x/net/context"
 )
 
 type (
