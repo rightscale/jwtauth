@@ -1,10 +1,9 @@
 package jwtauth_test
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
-
-	"golang.org/x/net/context"
 
 	"github.com/goadesign/goa"
 	. "github.com/onsi/ginkgo"

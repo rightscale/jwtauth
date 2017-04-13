@@ -1,12 +1,11 @@
 package jwtauth_test
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"time"
-
-	"golang.org/x/net/context"
 
 	jwtpkg "github.com/dgrijalva/jwt-go"
 	"github.com/goadesign/goa"

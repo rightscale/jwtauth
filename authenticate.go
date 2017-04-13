@@ -1,11 +1,11 @@
 package jwtauth
 
 import (
+	"context"
 	"net/http"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/goadesign/goa"
-	"golang.org/x/net/context"
 )
 
 // Authenticate creates a middleware that authenticates incoming requests.

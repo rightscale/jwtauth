@@ -1,8 +1,9 @@
 package jwtauth
 
 import (
+	"context"
+
 	"github.com/goadesign/goa"
-	"golang.org/x/net/context"
 )
 
 // ScopesClaim is a Private Claim Name, as stipulated in RFC7519 Section 4.3,
