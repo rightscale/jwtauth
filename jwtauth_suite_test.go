@@ -166,9 +166,15 @@ func publicKey(key interface{}) interface{} {
 func makeTokenWithTimestamps(issuer, subject string, key interface{}, iat, nbf, exp time.Time, scopes ...string) string {
 	claims := jwtauth.Claims{}
 	claims["iss"] = issuer
-	claims["iat"] = iat.Unix()
-	claims["nbf"] = nbf.Unix()
-	claims["exp"] = exp.Unix()
+	if !iat.IsZero() {
+		claims["iat"] = iat.Unix()
+	}
+	if !nbf.IsZero() {
+		claims["nbf"] = nbf.Unix()
+	}
+	if !exp.IsZero() {
+		claims["exp"] = exp.Unix()
+	}
 	claims["sub"] = subject
 	claims["scopes"] = scopes
 

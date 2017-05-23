@@ -43,6 +43,24 @@ var _ = Describe("Authenticate() middleware", func() {
 			Ω(result).Should(HaveResponseStatus(401))
 		})
 
+		It("rejects expired tokens", func() {
+			store := &jwtauth.SimpleKeystore{hmacKey1}
+			middleware := jwtauth.Authenticate(commonScheme, store)
+
+			iat := time.Now().Add(-60 * time.Second)
+			nbf := time.Time{}
+			exp := time.Now().Add(-30 * time.Second)
+			setBearerHeader(req, makeTokenWithTimestamps("alice", "bob", hmacKey1, iat, nbf, exp))
+
+			result := middleware(stack)(context.Background(), resp, req)
+
+			Ω(result).Should(HaveResponseStatus(401))
+			if er, ok := result.(*goa.ErrorResponse); ok {
+				Expect(er.Code).To(Equal("invalid_token"))
+				Expect(er.Detail).To(Equal("Token is expired"))
+			}
+		})
+
 		It("fails when JWTSecurity.Location is unsupported", func() {
 			scheme := &goa.JWTSecurity{In: goa.LocQuery, Name: "jwt"}
 			store := &jwtauth.NamedKeystore{}
