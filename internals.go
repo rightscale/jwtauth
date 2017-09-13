@@ -3,6 +3,8 @@ package jwtauth
 import (
 	"crypto/ecdsa"
 	"crypto/rsa"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -11,11 +13,45 @@ import (
 	"github.com/goadesign/goa"
 )
 
+func parseTokenMetadata(tok string) []interface{} {
+	ret := make([]interface{}, 0, 4)
+
+	bits := strings.SplitN(tok, ".", 3)
+
+	if rawHeader, err := base64.RawURLEncoding.DecodeString(bits[0]); err == nil {
+		var header map[string]interface{}
+		if err := json.Unmarshal(rawHeader, &header); err == nil {
+			ret = append(ret, []interface{}{"header", header}...)
+		} else {
+			ret = append(ret, []interface{}{"header", string(rawHeader)}...)
+		}
+	} else {
+		ret = append(ret, []interface{}{"header", bits[0]}...)
+	}
+
+	if len(bits) > 1 {
+		if rawClaims, err := base64.RawURLEncoding.DecodeString(bits[1]); err == nil {
+			var claims Claims
+			if err := json.Unmarshal(rawClaims, &claims); err == nil {
+				ret = append(ret, []interface{}{"claims", claims}...)
+			} else {
+				ret = append(ret, []interface{}{"claims", string(rawClaims)}...)
+			}
+		} else {
+			ret = append(ret, []interface{}{"claims", bits[1]}...)
+		}
+	}
+
+	return ret
+}
+
 // parseToken does the gruntwork of extracting A JWT from a request.
 func parseToken(scheme *goa.JWTSecurity, store Keystore, exfn ExtractionFunc, req *http.Request) (*jwt.Token, error) {
 	tok, err1 := exfn(scheme, req)
 	if err1 != nil {
 		return nil, err1
+	} else if tok == "" {
+		return nil, nil
 	}
 
 	var alg string
@@ -28,7 +64,7 @@ func parseToken(scheme *goa.JWTSecurity, store Keystore, exfn ExtractionFunc, re
 		}
 		key = store.Get(iss)
 		if key == nil {
-			return nil, ErrInvalidToken("untrusted", "issuer", iss)
+			return nil, ErrInvalidToken("Untrusted", "issuer", iss)
 		}
 		return key, nil
 	})
@@ -40,11 +76,14 @@ func parseToken(scheme *goa.JWTSecurity, store Keystore, exfn ExtractionFunc, re
 		panic(err)
 	}
 
-	if ve, ok := err.(*jwt.ValidationError); ok {
-		err = ve.Inner
+	if ve, ok := err.(*jwt.ValidationError); ok && ve.Inner != nil {
+		if ve.Inner != nil {
+			err = ve.Inner
+		}
 	}
+
 	if err != nil {
-		err = ErrInvalidToken(err.Error(), "token", tok)
+		err = ErrInvalidToken(err.Error(), parseTokenMetadata(tok)...)
 	}
 
 	return parsed, err
