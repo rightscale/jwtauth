@@ -189,14 +189,26 @@ func setBearerHeader(req *http.Request, token string) {
 	req.Header.Set("Authorization", header)
 }
 
-func HaveResponseStatus(expected interface{}) types.GomegaMatcher {
+func HaveResponseStatus(expected int) types.GomegaMatcher {
 	return &statusMatcher{
 		expected: expected,
 	}
 }
 
+func HaveDetailSubstring(expected string) types.GomegaMatcher {
+	return &detailMatcher{
+		expected: expected,
+	}
+}
+
+func HaveMetaKey(expected string) types.GomegaMatcher {
+	return &metaMatcher{
+		expected: expected,
+	}
+}
+
 type statusMatcher struct {
-	expected interface{}
+	expected int
 }
 
 func (matcher *statusMatcher) Match(actual interface{}) (success bool, err error) {
@@ -216,4 +228,56 @@ func (matcher *statusMatcher) FailureMessage(actual interface{}) (message string
 
 func (matcher *statusMatcher) NegatedFailureMessage(actual interface{}) (message string) {
 	return fmt.Sprintf("Expected\n\t%#v\nnot to contain the JSON representation of\n\t%#v", actual, matcher.expected)
+}
+
+type detailMatcher struct {
+	expected string
+}
+
+func (matcher *detailMatcher) Match(actual interface{}) (success bool, err error) {
+	ger, ok := actual.(*goa.ErrorResponse)
+	if !ok {
+		return false, fmt.Errorf("HaveDetail expects an instance of\n\t*goa.ErrorResponse\nbut got\n\t%t", actual)
+	}
+
+	if ger == nil {
+		return false, nil
+	}
+
+	match := strings.Index(ger.Detail, matcher.expected) != -1
+	return match, nil
+}
+
+func (matcher *detailMatcher) FailureMessage(actual interface{}) (message string) {
+	return fmt.Sprintf("Expected\n\t%#v\nto have detail substring\n\t%#v", actual, matcher.expected)
+}
+
+func (matcher *detailMatcher) NegatedFailureMessage(actual interface{}) (message string) {
+	return fmt.Sprintf("Expected\n\t%#v\nnot to have detail substring\n\t%#v", actual, matcher.expected)
+}
+
+type metaMatcher struct {
+	expected string
+}
+
+func (matcher *metaMatcher) Match(actual interface{}) (success bool, err error) {
+	ger, ok := actual.(*goa.ErrorResponse)
+	if !ok {
+		return false, fmt.Errorf("HaveDetail expects an instance of\n\t*goa.ErrorResponse\nbut got\n\t%t", actual)
+	}
+
+	if ger == nil {
+		return false, nil
+	}
+
+	_, match := ger.Meta[matcher.expected]
+	return match, nil
+}
+
+func (matcher *metaMatcher) FailureMessage(actual interface{}) (message string) {
+	return fmt.Sprintf("Expected\n\t%#v\nto have metadata key\n\t%#v", actual, matcher.expected)
+}
+
+func (matcher *metaMatcher) NegatedFailureMessage(actual interface{}) (message string) {
+	return fmt.Sprintf("Expected\n\t%#v\nnot to have metadata key\n\t%#v", actual, matcher.expected)
 }

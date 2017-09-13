@@ -164,6 +164,8 @@ func testKeyType(name string, trusted, untrusted interface{}) {
 			result := middleware(stack)(context.Background(), resp, req)
 
 			Ω(result).Should(HaveResponseStatus(401))
+			Ω(result).Should(HaveMetaKey("claims"))
+
 			Ω(claims).Should(HaveLen(0))
 		})
 
@@ -173,6 +175,7 @@ func testKeyType(name string, trusted, untrusted interface{}) {
 			result := middleware(stack)(context.Background(), resp, req)
 
 			Ω(result).Should(HaveResponseStatus(401))
+
 			Ω(claims).Should(HaveLen(0))
 		})
 
@@ -185,6 +188,9 @@ func testKeyType(name string, trusted, untrusted interface{}) {
 			result := middleware(stack)(context.Background(), resp, req)
 
 			Ω(result).Should(HaveResponseStatus(401))
+			Ω(result).Should(HaveDetailSubstring("expired"))
+			Ω(result).Should(HaveMetaKey("claims"))
+
 			Ω(claims).Should(HaveLen(0))
 		})
 
@@ -198,6 +204,9 @@ func testKeyType(name string, trusted, untrusted interface{}) {
 			result := middleware(stack)(context.Background(), resp, req)
 
 			Ω(result).Should(HaveResponseStatus(401))
+			Ω(result).Should(HaveDetailSubstring("not valid yet"))
+			Ω(result).Should(HaveMetaKey("claims"))
+
 			Ω(claims).Should(HaveLen(0))
 		})
 	})
