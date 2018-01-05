@@ -47,18 +47,20 @@ func parseTokenMetadata(tok string) []interface{} {
 
 // parseToken does the gruntwork of extracting A JWT from a request.
 func parseToken(scheme *goa.JWTSecurity, store Keystore, exfn ExtractionFunc, req *http.Request) (*jwt.Token, error) {
-	tok, err1 := exfn(scheme, req)
-	if err1 != nil {
-		return nil, err1
+	// Extract the JWT from the request
+	tok, err := exfn(scheme, req)
+	if err != nil {
+		return nil, err
 	} else if tok == "" {
 		return nil, nil
 	}
 
-	var alg string
+	// Parse the JWT and identify the issuer
+	var alg, iss string
 	var key interface{}
 	parsed, err := jwt.Parse(tok, func(token *jwt.Token) (interface{}, error) {
 		alg, _ = token.Header["alg"].(string)
-		iss, err := identifyIssuer(token)
+		iss, err = identifyIssuer(token)
 		if err != nil {
 			return nil, err
 		}
@@ -72,7 +74,7 @@ func parseToken(scheme *goa.JWTSecurity, store Keystore, exfn ExtractionFunc, re
 	// help clients with mystery errors caused by fast-and-loose key
 	// typing in crypto and dgrijalva/jwt-go
 	if err != nil && strings.HasPrefix(err.Error(), "key is of invalid type") {
-		err = fmt.Errorf("%s (%T for algorithm %s)", err.Error(), key, alg)
+		err = fmt.Errorf("%s (local keystore contains %T for issuer '%s' but JWT has alg=%s)", err.Error(), key, iss, alg)
 		panic(err)
 	}
 
