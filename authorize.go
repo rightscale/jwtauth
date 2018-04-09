@@ -2,38 +2,32 @@ package jwtauth
 
 import (
 	"context"
-	"net/http"
 
-	"github.com/goadesign/goa"
+	"goa.design/plugins/security"
 )
 
-// Authorize creates a middleware that authorizes incoming requests.
-// Specifically, the middleware compares goa's required scopes against the
-// claimed scopes contained in the JWT, ensuring that the claimed scopes are
-// a superset of the required scopes.
+// ScopesClaim is a Private Claim Name, as stipulated in RFC7519 Section 4.3,
+// that jwtauth uses to store scope information in tokens. If you need to
+// interoperate with third parties w/r/t to token scope, it may be advisable
+// to change this to a Collision-Resistant Claim Name instead.
+var ScopesClaim = "scopes"
+
+// Authorize is the default authorization method. It compares the
+// context's required scopes against a list of scopes that are claimed in the
+// JWT. If the claimed scopes satisfy all required scopes, Authorize won't
+// return any errors; otherwise, it responds with ErrAuthorizationFailed.
 //
-// Most applications will require a more nuanced authorization scheme;
-// to do this, use DefaultAuthorization() as a starting point for implementing
-// your own authorization behavior; then, instead of calling this function,
-// call AuthorizeWithFunc() to instantiate a middleware that uses your custom
-// behavior.
-func Authorize() goa.Middleware {
-	return AuthorizeWithFunc(DefaultAuthorization)
-}
-
-// AuthorizeWithFunc creates a middleware that authorizes requests using a
-// custom AuthorizationFunc.
-func AuthorizeWithFunc(fn AuthorizationFunc) goa.Middleware {
-	return func(nextHandler goa.Handler) goa.Handler {
-		return func(ctx context.Context, rw http.ResponseWriter, req *http.Request) error {
-			claims := ContextClaims(ctx)
-			err := fn(ctx, claims)
-
-			if err == nil {
-				return nextHandler(ctx, rw, req)
-			}
-
-			return err
-		}
+// If the context requires no scopes, Authorize still verifies that SOME claims
+// are present, under the assumption that the user needs to be authenticated
+// even if they do not require any specific privilege.
+func Authorize(ctx context.Context, token string, scheme *security.JWTScheme) (context.Context, error) {
+	claims, _ := ctx.Value(claimsKey).(Claims)
+	if claims == nil || len(claims) == 0 {
+		return ctx, ErrAuthenticationFailed("authentication required: no claims found in context")
 	}
+	held := claims.Strings(ScopesClaim)
+	if err := scheme.Validate(held); err != nil {
+		return ctx, ErrAuthorizationFailed(err.Error())
+	}
+	return ctx, nil
 }

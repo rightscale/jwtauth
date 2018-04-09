@@ -5,19 +5,17 @@ import (
 	"crypto/rsa"
 	"fmt"
 	"net/http"
-	"reflect"
 	"strings"
+	"testing"
 	"time"
 
-	"github.com/goadesign/goa"
+	jwtpkg "github.com/dgrijalva/jwt-go"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/types"
 	jwtauth "github.com/rightscale/jwtauth"
-
-	"testing"
-
-	jwtpkg "github.com/dgrijalva/jwt-go"
+	"goa.design/goa"
+	"goa.design/plugins/security"
 )
 
 func TestJWTSuite(t *testing.T) {
@@ -31,7 +29,7 @@ func (bc *bogusClaims) Valid() error {
 	return nil
 }
 
-var commonScheme = &goa.JWTSecurity{In: goa.LocHeader, Name: "Authorization"}
+var commonScheme = &security.JWTScheme{Name: "test_jwt", Scopes: []string{"scope1:action1"}, RequiredScopes: []string{"scope1:action1"}}
 
 var hmacKey1 = []byte("I like tacos")
 
@@ -189,95 +187,34 @@ func setBearerHeader(req *http.Request, token string) {
 	req.Header.Set("Authorization", header)
 }
 
-func HaveResponseStatus(expected int) types.GomegaMatcher {
-	return &statusMatcher{
+func HaveMessageSubstring(expected string) types.GomegaMatcher {
+	return &messageMatcher{
 		expected: expected,
 	}
 }
 
-func HaveDetailSubstring(expected string) types.GomegaMatcher {
-	return &detailMatcher{
-		expected: expected,
-	}
-}
-
-func HaveMetaKey(expected string) types.GomegaMatcher {
-	return &metaMatcher{
-		expected: expected,
-	}
-}
-
-type statusMatcher struct {
-	expected int
-}
-
-func (matcher *statusMatcher) Match(actual interface{}) (success bool, err error) {
-	response, ok := actual.(interface {
-		ResponseStatus() int
-	})
-	if !ok {
-		return false, fmt.Errorf("HaveResponseStatus expects a type with a method\n\tResponseStatus() int\nbut got\n\t%#v", actual)
-	}
-	match := reflect.DeepEqual(response.ResponseStatus(), matcher.expected)
-	return match, nil
-}
-
-func (matcher *statusMatcher) FailureMessage(actual interface{}) (message string) {
-	return fmt.Sprintf("Expected\n\t%#v\nto have ResponseStatus\n\t%#v", actual, matcher.expected)
-}
-
-func (matcher *statusMatcher) NegatedFailureMessage(actual interface{}) (message string) {
-	return fmt.Sprintf("Expected\n\t%#v\nnot to contain the JSON representation of\n\t%#v", actual, matcher.expected)
-}
-
-type detailMatcher struct {
+type messageMatcher struct {
 	expected string
 }
 
-func (matcher *detailMatcher) Match(actual interface{}) (success bool, err error) {
-	ger, ok := actual.(*goa.ErrorResponse)
+func (matcher *messageMatcher) Match(actual interface{}) (success bool, err error) {
+	ger, ok := actual.(*goa.ServiceError)
 	if !ok {
-		return false, fmt.Errorf("HaveDetail expects an instance of\n\t*goa.ErrorResponse\nbut got\n\t%t", actual)
+		return false, fmt.Errorf("HaveMessage expects an instance of\n\t*goa.ServiceError\nbut got\n\t%t", actual)
 	}
 
 	if ger == nil {
 		return false, nil
 	}
 
-	match := strings.Index(ger.Detail, matcher.expected) != -1
+	match := strings.Index(ger.Message, matcher.expected) != -1
 	return match, nil
 }
 
-func (matcher *detailMatcher) FailureMessage(actual interface{}) (message string) {
-	return fmt.Sprintf("Expected\n\t%#v\nto have detail substring\n\t%#v", actual, matcher.expected)
+func (matcher *messageMatcher) FailureMessage(actual interface{}) (message string) {
+	return fmt.Sprintf("Expected\n\t%#v\nto have message substring\n\t%#v", actual, matcher.expected)
 }
 
-func (matcher *detailMatcher) NegatedFailureMessage(actual interface{}) (message string) {
-	return fmt.Sprintf("Expected\n\t%#v\nnot to have detail substring\n\t%#v", actual, matcher.expected)
-}
-
-type metaMatcher struct {
-	expected string
-}
-
-func (matcher *metaMatcher) Match(actual interface{}) (success bool, err error) {
-	ger, ok := actual.(*goa.ErrorResponse)
-	if !ok {
-		return false, fmt.Errorf("HaveDetail expects an instance of\n\t*goa.ErrorResponse\nbut got\n\t%t", actual)
-	}
-
-	if ger == nil {
-		return false, nil
-	}
-
-	_, match := ger.Meta[matcher.expected]
-	return match, nil
-}
-
-func (matcher *metaMatcher) FailureMessage(actual interface{}) (message string) {
-	return fmt.Sprintf("Expected\n\t%#v\nto have metadata key\n\t%#v", actual, matcher.expected)
-}
-
-func (matcher *metaMatcher) NegatedFailureMessage(actual interface{}) (message string) {
-	return fmt.Sprintf("Expected\n\t%#v\nnot to have metadata key\n\t%#v", actual, matcher.expected)
+func (matcher *messageMatcher) NegatedFailureMessage(actual interface{}) (message string) {
+	return fmt.Sprintf("Expected\n\t%#v\nnot to have message substring\n\t%#v", actual, matcher.expected)
 }

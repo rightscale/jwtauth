@@ -10,7 +10,6 @@ import (
 var _ = Describe("Context accessor functions", func() {
 	var (
 		ctx    context.Context
-		token  = TestToken("potatoes", "fried")
 		claims = Claims{"potatoes": "fried"}
 	)
 
@@ -38,25 +37,6 @@ var _ = Describe("Context accessor functions", func() {
 			})
 			It("returns nil", func() {
 				Ω(ContextClaims(ctx)).Should(BeNil())
-			})
-		})
-	})
-	Describe("ContextToken", func() {
-		Context("given a context with a token", func() {
-			BeforeEach(func() {
-				ctx = WithToken(ctx, token)
-			})
-			It("returns the token", func() {
-				Ω(ContextToken(ctx)).Should(Equal(token))
-			})
-		})
-
-		Context("given a context that has no token", func() {
-			BeforeEach(func() {
-				ctx = context.Background()
-			})
-			It("returns an empty string", func() {
-				Ω(ContextToken(ctx)).Should(Equal(""))
 			})
 		})
 	})

@@ -11,7 +11,8 @@ install:
 - go get github.com/onsi/ginkgo/ginkgo
 - go get github.com/mattn/goveralls
 - go get github.com/dgrijalva/jwt-go
-- go get github.com/goadesign/goa
+- go get goa.design/goa
+- go get goa.design/plugins/security
 script:
 - ginkgo -r -cover
 - goveralls -coverprofile=jwtauth.coverprofile -service=travis-ci -repotoken $COVERALLS_TOKEN

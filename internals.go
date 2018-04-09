@@ -6,11 +6,9 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"strings"
 
 	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/goadesign/goa"
 )
 
 func parseTokenMetadata(tok string) []interface{} {
@@ -46,27 +44,19 @@ func parseTokenMetadata(tok string) []interface{} {
 }
 
 // parseToken does the gruntwork of extracting A JWT from a request.
-func parseToken(scheme *goa.JWTSecurity, store Keystore, exfn ExtractionFunc, req *http.Request) (*jwt.Token, error) {
-	// Extract the JWT from the request
-	tok, err := exfn(scheme, req)
-	if err != nil {
-		return nil, err
-	} else if tok == "" {
-		return nil, nil
-	}
-
+func parseToken(token string, store Keystore) (*jwt.Token, error) {
 	// Parse the JWT and identify the issuer
 	var alg, iss string
 	var key interface{}
-	parsed, err := jwt.Parse(tok, func(token *jwt.Token) (interface{}, error) {
+	parsed, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		alg, _ = token.Header["alg"].(string)
-		iss, err = identifyIssuer(token)
+		iss, err := identifyIssuer(token)
 		if err != nil {
 			return nil, err
 		}
 		key = store.Get(iss)
 		if key == nil {
-			return nil, ErrInvalidToken("Untrusted", "issuer", iss)
+			return nil, ErrInvalidToken("Untrusted issuer %s", iss)
 		}
 		return key, nil
 	})
@@ -85,7 +75,7 @@ func parseToken(scheme *goa.JWTSecurity, store Keystore, exfn ExtractionFunc, re
 	}
 
 	if err != nil {
-		err = ErrInvalidToken(err.Error(), parseTokenMetadata(tok)...)
+		err = ErrInvalidToken(err.Error()+": %#v", parseTokenMetadata(token)...)
 	}
 
 	return parsed, err
