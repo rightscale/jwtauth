@@ -51,7 +51,7 @@ authorization.
 
 ```go
   secret := []byte("super secret HMAC key")
-  store := jwtauth.SimpleKeystore{Key: secret}
+  store := &jwtauth.SimpleKeystore{Key: secret}
 
   // Authentication is not a security scheme in goa's terminology; it is
   // merely a prerequisite to authorization that handles parsing and validating
