@@ -1,20 +1,15 @@
+dist: xenial
 language: go
 go:
-- 1.9
-sudo: false
+- 1.12.x
 env:
   global:
     # COVERALLS_TOKEN
     secure: HwgkfhDpf1ix/YK/SnHRmUvrIfT4ZC5yRpa1069kRsweZ9YLUHDE3QF+Kl0W05ShTs7ArCRWn0Opl7BMWiw3t/wAQoH3vPQ4/+mjDzDzE32kUQFYsI3b6KWUFfoJpVYGMKN658K+1UnVf37y4zMkV1ME5FHDW1oyJmWEZZ27/x2tS67XL7e5qKL67haxacDtBtN0FvHb9BcfAl50UmGs5jgxE8pqOTrU00YgdAcHtJGOmIgd0FwC19hfu/gnL0q9IVf1ZW+SdbZGcRft9sq8wwMawdTjcKz1r/f9mG+dU7oxDQdWp98svhEnB2NzrZNm91aF6/wdyegAlhNs2yQydxlEkeGy6JZ9Ur8ZopvpD5Ja0kH9qJZPoxbkjADRyxOQPY8sv5/zwpag2KJARMVyIWug1dQy2WrnAJCP2RnOSKfoTsAJ43mjCj9BIyrs28a8PkNqtZXcPpgO7xrH3ebf4NqdoFr2ChiYcF4LOdU0DEqKESKqjNFZYZb1PPd6S3+sO5iWEszOYon6Ff3o/9xalJMEXVkOYhEt1ffdzABT9IhRpFvrQqwNt32xe8FIIX2pF3d6KBxFd2pWYtpJZXc3Vgb9hkhazIUpmzAHK7QzqZo4FgsQIdj78kXa/4T4wUx4Ower8Cw6t9zo7xwuUSxtdED153yGYLf0cP8KBJPOP/I=
 install:
-- go get github.com/onsi/gomega
-- go get github.com/onsi/ginkgo/ginkgo
-- go get github.com/mattn/goveralls
-- go get github.com/dgrijalva/jwt-go
-- go get github.com/goadesign/goa
+- make depend
 script:
-- ginkgo -r -cover
-- goveralls -coverprofile=jwtauth.coverprofile -service=travis-ci -repotoken $COVERALLS_TOKEN
+- make test #coverage
 notifications:
   webhooks:
     urls:

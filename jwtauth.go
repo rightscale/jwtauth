@@ -8,6 +8,7 @@ import (
 )
 
 type (
+	// Keystore interface
 	//
 	// When the middleware receives a request containing a JWT, it extracts the
 	// "iss" (Issuer) claim from the JWT body and gets a correspondingly-named

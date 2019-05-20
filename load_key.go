@@ -33,9 +33,8 @@ func LoadKey(material []byte) interface{} {
 			panic(err)
 		}
 		return parsed
-	} else {
-		return material
 	}
+	return material
 }
 
 // Parse a public key from a block of PEM-formatted ASCII text.

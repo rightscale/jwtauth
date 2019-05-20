@@ -131,7 +131,7 @@ func testKeyType(name string, trusted, untrusted interface{}) {
 	var middleware goa.Middleware
 	var claims jwtauth.Claims
 
-	Context(fmt.Sprintf("given %s keys"), func() {
+	Context(fmt.Sprintf("given %s keys", name), func() {
 		BeforeEach(func() {
 			resp = httptest.NewRecorder()
 			req, _ = http.NewRequest("GET", "http://example.com/", nil)

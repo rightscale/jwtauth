@@ -14,6 +14,7 @@ type (
 	}
 )
 
+// Trust implements jwtauth.Keystore#Trust
 func (sk *SimpleKeystore) Trust(issuer string, key interface{}) error {
 	if !reflect.DeepEqual(key, sk.Key) {
 		return fmt.Errorf("cannot trust additional keys; call RevokeTrust first")
@@ -21,9 +22,11 @@ func (sk *SimpleKeystore) Trust(issuer string, key interface{}) error {
 	return nil
 }
 
+// RevokeTrust implements jwtauth.Keystore#RevokeTrust
 func (sk *SimpleKeystore) RevokeTrust(issuer string) {
 }
 
+// Get implements jwtauth.Keystore#Get
 func (sk *SimpleKeystore) Get(issuer string) interface{} {
 	return sk.Key
 }

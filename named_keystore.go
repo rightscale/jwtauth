@@ -25,7 +25,9 @@ type (
 	}
 )
 
-// Trust grants trust in an issuer. It accepts any of the following types:
+// Trust implements jwtauth.Keystore#Trust
+//
+// Grants trust in an issuer. It accepts any of the following types:
 //	   - []byte (for HS tokens)
 //     - *rsa.PublicKey (for RS tokens)
 //     - *ecdsa.PublicKey (for ES tokens)
@@ -64,6 +66,7 @@ func (nk *NamedKeystore) Trust(issuer string, key interface{}) error {
 	return nil
 }
 
+// RevokeTrust implements jwtauth.Keystore#RevokeTrust
 func (nk *NamedKeystore) RevokeTrust(issuer string) {
 	nk.Lock()
 	defer nk.Unlock()
@@ -76,6 +79,7 @@ func (nk *NamedKeystore) RevokeTrust(issuer string) {
 	return
 }
 
+// Get implements jwtauth.Keystore#Get
 func (nk *NamedKeystore) Get(issuer string) interface{} {
 	nk.RLock()
 	defer nk.RUnlock()
