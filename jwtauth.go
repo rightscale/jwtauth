@@ -1,12 +1,5 @@
 package jwtauth
 
-import (
-	"context"
-	"net/http"
-
-	"github.com/goadesign/goa"
-)
-
 type (
 	// Keystore interface
 	//
@@ -21,18 +14,4 @@ type (
 		// Get returns the key associated with the named issuer.
 		Get(issuer string) interface{}
 	}
-
-	// ExtractionFunc is an optional callback that allows you to customize
-	// jwtauth's handling of JSON Web Tokens during authentication.
-	//
-	// If your use case involves a proprietary JWT encoding, or a nonstandard
-	// location for the JWT, you can handle it with a custom ExtractionFunc.
-	//
-	// The return value from ExtractionFunc should either be the empty string
-	// (if no token was present in the request), or a well-formed JWT.
-	ExtractionFunc func(*goa.JWTSecurity, *http.Request) (string, error)
-
-	// AuthorizationFunc is an optional callback that allows customization
-	// of the way the middleware authorizes each request.
-	AuthorizationFunc func(context.Context, Claims) error
 )

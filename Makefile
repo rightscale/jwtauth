@@ -1,15 +1,15 @@
 SHELL=/bin/bash
 
+# enable go-modules for go v1.11 and v1.12
+export GO111MODULE=on
+
 # alias for 'vendor'
 depend: vendor
 
-# installs glide binary, if not present
-$(GOPATH)/bin/dep:
-	go get -v -u github.com/golang/dep/cmd/dep
-
-# install vendored dependencies, as needed
-vendor: $(GOPATH)/bin/dep Gopkg.lock
-	@dep ensure --vendor-only
+# install vendored dependencies for legacy support; not needed by go modules
+vendor: go.mod go.sum
+	@for sleeper in 0 1 2 4 8 16 32; do sleep $$sleeper; go mod vendor; if [ $$? = 0 ]; then break; else rm -rf vendor; fi; done
+	@if [ -d vendor ]; then touch vendor; else exit 1; fi
 
 # installs goimports binary, if not present
 $(GOPATH)/bin/goimports:
@@ -21,7 +21,7 @@ fmt: $(GOPATH)/bin/goimports
 	$(GOPATH)/bin/goimports -w -l $$files
 
 $(GOPATH)/bin/golint:
-	@go get golang.org/x/lint/golint && golint
+	@go get golang.org/x/lint/golint
 
 lint: $(GOPATH)/bin/golint
 	@if gofmt -l . | egrep -v '^vendor/' | grep .go; then \

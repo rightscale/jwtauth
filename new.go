@@ -6,6 +6,12 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
+// ScopesClaim is a Private Claim Name, as stipulated in RFC7519 Section 4.3,
+// that jwtauth uses to store scope information in tokens. If you need to
+// interoperate with third parties w/r/t to token scope, it may be advisable
+// to change this to a Collision-Resistant Claim Name instead.
+var ScopesClaim = "scopes"
+
 // NewToken creates a JWT with the specified claims and signs it using
 // the specified issuer key.
 //

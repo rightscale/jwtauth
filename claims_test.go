@@ -1,4 +1,4 @@
-package jwtauth_test
+package jwtauth
 
 import (
 	"fmt"
@@ -6,7 +6,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/rightscale/jwtauth"
 )
 
 type bogusStringer struct {
@@ -53,7 +52,7 @@ var _ = Describe("Claims", func() {
 	}
 
 	It("converts to bool", func() {
-		claims := jwtauth.Claims{}
+		claims := Claims{}
 
 		claims["foo"] = false
 		Expect(claims.Bool("foo")).To(Equal(false))
@@ -80,10 +79,10 @@ var _ = Describe("Claims", func() {
 	})
 
 	It("converts to string", func() {
-		claims := jwtauth.Claims{}
+		claims := Claims{}
 
 		claims["foo"] = bogusStringer{}
-		Expect(claims.String("foo")).To(Equal("jwtauth_test.bogusStringer"))
+		Expect(claims.String("foo")).To(Equal("jwtauth.bogusStringer"))
 		claims["foo"] = 42
 		Expect(claims.String("foo")).To(Equal("42"))
 
@@ -94,7 +93,7 @@ var _ = Describe("Claims", func() {
 	})
 
 	It("converts to numeric", func() {
-		claims := jwtauth.Claims{}
+		claims := Claims{}
 
 		claims["foo"] = "0"
 		Expect(claims.Int("foo")).To(Equal(int64(0)))
@@ -107,7 +106,7 @@ var _ = Describe("Claims", func() {
 	})
 
 	It("converts to Time", func() {
-		claims := jwtauth.Claims{}
+		claims := Claims{}
 
 		now := time.Now().Unix()
 		claims["foo"] = now
@@ -124,7 +123,7 @@ var _ = Describe("Claims", func() {
 		epoch := time.Unix(0, 0).UTC()
 		then := time.Unix(0xFFFFFFFF, 0).UTC()
 
-		claims := jwtauth.Claims{
+		claims := Claims{
 			"iss": "Issuer",
 			"sub": "Subject",
 			"iat": 0,

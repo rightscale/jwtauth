@@ -1,4 +1,4 @@
-package jwtauth_test
+package jwtauth
 
 import (
 	"crypto/ecdsa"
@@ -7,17 +7,14 @@ import (
 	"net/http"
 	"reflect"
 	"strings"
+	"testing"
 	"time"
 
-	"github.com/goadesign/goa"
+	jwtpkg "github.com/dgrijalva/jwt-go"
+	"github.com/onsi/gomega/types"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/types"
-	jwtauth "github.com/rightscale/jwtauth"
-
-	"testing"
-
-	jwtpkg "github.com/dgrijalva/jwt-go"
 )
 
 func TestJWTSuite(t *testing.T) {
@@ -30,8 +27,6 @@ type bogusClaims struct{}
 func (bc *bogusClaims) Valid() error {
 	return nil
 }
-
-var commonScheme = &goa.JWTSecurity{In: goa.LocHeader, Name: "Authorization"}
 
 var hmacKey1 = []byte("I like tacos")
 
@@ -164,7 +159,7 @@ func publicKey(key interface{}) interface{} {
 }
 
 func makeTokenWithTimestamps(issuer, subject string, key interface{}, iat, nbf, exp time.Time, scopes ...string) string {
-	claims := jwtauth.Claims{}
+	claims := Claims{}
 	claims["iss"] = issuer
 	claims["iat"] = iat.Unix()
 	claims["nbf"] = nbf.Unix()
@@ -172,7 +167,7 @@ func makeTokenWithTimestamps(issuer, subject string, key interface{}, iat, nbf, 
 	claims["sub"] = subject
 	claims["scopes"] = scopes
 
-	token, err := jwtauth.NewToken(key, claims)
+	token, err := NewToken(key, claims)
 	if err != nil {
 		panic(err)
 	}
@@ -191,18 +186,6 @@ func setBearerHeader(req *http.Request, token string) {
 
 func HaveResponseStatus(expected int) types.GomegaMatcher {
 	return &statusMatcher{
-		expected: expected,
-	}
-}
-
-func HaveDetailSubstring(expected string) types.GomegaMatcher {
-	return &detailMatcher{
-		expected: expected,
-	}
-}
-
-func HaveMetaKey(expected string) types.GomegaMatcher {
-	return &metaMatcher{
 		expected: expected,
 	}
 }
@@ -228,56 +211,4 @@ func (matcher *statusMatcher) FailureMessage(actual interface{}) (message string
 
 func (matcher *statusMatcher) NegatedFailureMessage(actual interface{}) (message string) {
 	return fmt.Sprintf("Expected\n\t%#v\nnot to contain the JSON representation of\n\t%#v", actual, matcher.expected)
-}
-
-type detailMatcher struct {
-	expected string
-}
-
-func (matcher *detailMatcher) Match(actual interface{}) (success bool, err error) {
-	ger, ok := actual.(*goa.ErrorResponse)
-	if !ok {
-		return false, fmt.Errorf("HaveDetail expects an instance of\n\t*goa.ErrorResponse\nbut got\n\t%t", actual)
-	}
-
-	if ger == nil {
-		return false, nil
-	}
-
-	match := strings.Index(ger.Detail, matcher.expected) != -1
-	return match, nil
-}
-
-func (matcher *detailMatcher) FailureMessage(actual interface{}) (message string) {
-	return fmt.Sprintf("Expected\n\t%#v\nto have detail substring\n\t%#v", actual, matcher.expected)
-}
-
-func (matcher *detailMatcher) NegatedFailureMessage(actual interface{}) (message string) {
-	return fmt.Sprintf("Expected\n\t%#v\nnot to have detail substring\n\t%#v", actual, matcher.expected)
-}
-
-type metaMatcher struct {
-	expected string
-}
-
-func (matcher *metaMatcher) Match(actual interface{}) (success bool, err error) {
-	ger, ok := actual.(*goa.ErrorResponse)
-	if !ok {
-		return false, fmt.Errorf("HaveDetail expects an instance of\n\t*goa.ErrorResponse\nbut got\n\t%t", actual)
-	}
-
-	if ger == nil {
-		return false, nil
-	}
-
-	_, match := ger.Meta[matcher.expected]
-	return match, nil
-}
-
-func (matcher *metaMatcher) FailureMessage(actual interface{}) (message string) {
-	return fmt.Sprintf("Expected\n\t%#v\nto have metadata key\n\t%#v", actual, matcher.expected)
-}
-
-func (matcher *metaMatcher) NegatedFailureMessage(actual interface{}) (message string) {
-	return fmt.Sprintf("Expected\n\t%#v\nnot to have metadata key\n\t%#v", actual, matcher.expected)
 }
