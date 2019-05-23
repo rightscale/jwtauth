@@ -11,6 +11,9 @@ vendor: go.mod go.sum
 	@for sleeper in 0 1 2 4 8 16 32; do sleep $$sleeper; go mod vendor; if [ $$? = 0 ]; then break; else rm -rf vendor; fi; done
 	@if [ -d vendor ]; then touch vendor; else exit 1; fi
 
+tidy: go.mod
+	@go mod tidy -v
+
 # installs goimports binary, if not present
 $(GOPATH)/bin/goimports:
 	@go get golang.org/x/tools/cmd/goimports
